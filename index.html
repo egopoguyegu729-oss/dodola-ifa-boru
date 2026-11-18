@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dodola Ifa Boru Special Boarding School</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="padding-bottom: 20px;">
+
+  <!-- School Header -->
+  <div class="topbar" style="justify-content: center; text-align: center; padding: 22px 16px;">
+    <div>
+      <img src="assets/logo.png" alt="School Logo" style="width: 75px; height: 75px; border-radius: 50%; border: 3px solid #D98A1C; background: #fff; margin-bottom: 8px;">
+      <h1 style="font-size: 1.2rem; color: #fff;">Dodola Ifa Boru Special Boarding School</h1>
+      <span style="color: #FDE68A; font-size: 0.82rem;">Official Campus Portal & Academic Hub</span>
+    </div>
+  </div>
+
+  <div class="container" style="max-width: 460px;">
+
+    <!-- Message Alert Box -->
+    <div id="alertBox" class="alert-box hidden"></div>
+
+    <!-- SCREEN 1: LOGIN & SIGN-UP CARD -->
+    <div id="authCard" class="card">
+      <!-- Switch Tabs -->
+      <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+        <button id="tabLogin" class="btn btn-primary" onclick="showTab('login')">Sign In</button>
+        <button id="tabSignup" class="btn" style="background: #E2E8F0; color: #1E293B;" onclick="showTab('signup')">Create Account</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Gmail Address</label>
+          <input type="email" id="loginEmail" placeholder="example@gmail.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="loginBtn">Sign In to Portal</button>
+      </form>
+
+      <!-- SIGN-UP FORM -->
+      <form id="signupForm" class="hidden">
+        <div class="form-group">
+          <label>Full Name (First, Father's & Grandfather's Name)</label>
+          <input type="text" id="regName" placeholder="e.g., Abebe Bikila Tadesse" required>
+        </div>
+
+        <div class="form-group">
+          <label>Gmail Address</label>
+          <input type="email" id="regEmail" placeholder="yourname@gmail.com" required>
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number (Ethiopian Format)</label>
+          <input type="tel" id="regPhone" value="+251 " placeholder="+251 912345678" required>
+          <small style="color: #64748B; font-size: 0.75rem;">Format: +251 9xxxxxxxx or +251 7xxxxxxxx</small>
+        </div>
+
+        <div class="form-group">
+          <label>I am a...</label>
+          <select id="regRole" onchange="toggleClassField()" required>
+            <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+          </select>
+        </div>
+
+        <!-- Grade & Section Selector (Shown only for Students) -->
+        <div id="classFieldGroup">
+          <div class="form-group">
+            <label>Select Grade / Stream</label>
+            <select id="regGrade">
+              <option value="">-- Choose Grade --</option>
+              <option value="Grade 9">Grade 9</option>
+              <option value="Grade 10">Grade 10</option>
+              <option value="Grade 11 Natural">Grade 11 Natural</option>
+              <option value="Grade 11 Social">Grade 11 Social</option>
+              <option value="Grade 12 Natural">Grade 12 Natural</option>
+              <option value="Grade 12 Social">Grade 12 Social</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Select Section</label>
+            <select id="regSection">
+              <option value="">-- Choose Section --</option>
+              <option value="Section A">Section A</option>
+              <option value="Section B">Section B</option>
+              <option value="Section C">Section C</option>
+              <option value="Section D">Section D</option>
+              <option value="Section E">Section E</option>
+              <option value="Section F">Section F</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Create Password (At least 6 characters)</label>
+          <input type="password" id="regPassword" minlength="6" placeholder="Create a strong password" required>
+        </div>
+
+        <button type="submit" class="btn btn-gold" id="signupBtn">Submit Registration</button>
+      </form>
+    </div>
+
+    <!-- SCREEN 2: WAITING FOR ADMIN APPROVAL -->
+    <div id="pendingCard" class="card card-urgent text-center hidden">
+      <div style="font-size: 2.5rem; margin-bottom: 10px;">⏳</div>
+      <h2 style="margin-bottom: 8px;">Account Pending Approval</h2>
+      <p style="color: #64748B; font-size: 0.92rem; margin-bottom: 16px;">
+        Thank you for registering, <strong id="pendingUserName" style="color: #1E293B;">Student</strong>! 
+        Your account is currently waiting for verification by the School Administrator.
+      </p>
+      <div style="background: #F8FAFC; padding: 12px; border-radius: 10px; font-size: 0.85rem; text-align: left; margin-bottom: 16px; border: 1px solid #E2E8F0;">
+        <p><strong>Gmail:</strong> <span id="pendingUserEmail"></span></p>
+        <p><strong>Phone:</strong> <span id="pendingUserPhone"></span></p>
+        <p><strong>Role:</strong> <span id="pendingUserRole"></span></p>
+      </div>
+      <button onclick="logoutUser()" class="btn btn-primary">Sign Out</button>
+    </div>
+
+  </div>
+
+  <!-- Load Local Supabase File First (Instant Offline Load!) -->
+    <script src="https://cloudflare.com"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+
+</body>
+</html>

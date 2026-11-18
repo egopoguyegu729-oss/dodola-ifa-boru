@@ -1,0 +1,252 @@
+/* css/style.css - Dodola Ifa Boru Special Boarding School (Fast System Fonts) */
+:root {
+  --royal-blue: #0B3B8C;
+  --royal-blue-dark: #072861;
+  --warm-gold: #D98A1C;
+  --warm-gold-light: #FEF3C7;
+  --bg-light: #F4F7FB;
+  --white: #FFFFFF;
+  --text-dark: #1E293B;
+  --text-muted: #64748B;
+  --border-color: #E2E8F0;
+  --danger: #DC2626;
+  --success: #16A34A;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  line-height: 1.5;
+  padding-bottom: 80px; /* Space for mobile bottom menu */
+}
+
+h1, h2, h3, h4 {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  color: var(--royal-blue);
+}
+
+/* Top Header */
+.topbar {
+  background: var(--royal-blue);
+  color: var(--white);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-brand img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--warm-gold);
+  background: var(--white);
+}
+
+.topbar-brand h1 {
+  color: var(--white);
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.topbar-brand span {
+  font-size: 0.72rem;
+  color: #CBD5E1;
+  display: block;
+}
+
+/* Main Container */
+.container {
+  max-width: 850px;
+  margin: 20px auto;
+  padding: 0 16px;
+}
+
+/* Cards */
+.card {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 6px rgba(11, 59, 140, 0.04);
+}
+
+.card-urgent {
+  border-left: 5px solid var(--warm-gold);
+  background: #FFFDF7;
+}
+
+/* Forms & Inputs */
+.form-group {
+  margin-bottom: 14px;
+}
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-dark);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: var(--white);
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--royal-blue);
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  width: 100%;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-align: center;
+  transition: 0.2s;
+}
+
+.btn-primary {
+  background: var(--royal-blue);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background: var(--royal-blue-dark);
+}
+
+.btn-gold {
+  background: var(--warm-gold);
+  color: var(--white);
+}
+
+.btn-sm {
+  width: auto;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: var(--white);
+}
+
+.btn-success {
+  background: var(--success);
+  color: var(--white);
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-blue {
+  background: #DBEAFE;
+  color: var(--royal-blue);
+}
+
+.badge-gold {
+  background: var(--warm-gold-light);
+  color: #92400E;
+}
+
+/* Mobile Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 4px;
+  z-index: 100;
+}
+
+.nav-item {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.nav-item.active {
+  color: var(--royal-blue);
+}
+
+.nav-icon {
+  font-size: 1.2rem;
+}
+
+/* Helpers */
+.hidden {
+  display: none !important;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-2 { margin-top: 12px; }
+.mb-2 { margin-bottom: 12px; }
+
+.alert-box {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.alert-error {
+  background: #FEE2E2;
+  color: var(--danger);
+}
+
+.alert-success {
+  background: #DCFCE7;
+  color: var(--success);
+}
