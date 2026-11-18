@@ -1,8 +1,8 @@
-// js/config.js - Clean Direct Supabase Connector
+// js/config.js
 const SUPABASE_URL = 'https://qjxvoeioiljvwqnxmkzs.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ozhGlJoKumxxP1lWCQpvug_lrLKG6Lr';
 
-function getHeaders(token = null) {
+function getHeaders(token) {
   return {
     'apikey': SUPABASE_ANON_KEY,
     'Authorization': 'Bearer ' + (token || SUPABASE_ANON_KEY),
@@ -22,14 +22,13 @@ function getSavedSession() {
 window.supabaseClient = {
   auth: {
     async getSession() {
-      const session = getSavedSession();
-      return { data: { session }, error: null };
+      return { data: { session: getSavedSession() }, error: null };
     },
     async signUp({ email, password, options }) {
       const res = await fetch(SUPABASE_URL + '/auth/v1/signup', {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ email: email, password: password, data: options && options.data ? options.data : {} })
+        body: JSON.stringify({ email: email, password: password, data: (options && options.data) || {} })
       });
       const json = await res.json();
       if (!res.ok) return { data: null, error: { message: json.msg || json.error_description || 'Sign up failed' } };
@@ -60,37 +59,37 @@ window.supabaseClient = {
     let bodyData = null;
     let isSingle = false;
 
-    const queryBuilder = {
-      select(cols = '*') {
-        url = url.replace('select=*', 'select=' + encodeURIComponent(cols));
-        return queryBuilder;
+    const qb = {
+      select(cols) {
+        if (cols) url = url.replace('select=*', 'select=' + encodeURIComponent(cols));
+        return qb;
       },
       eq(col, val) {
         url += '&' + col + '=eq.' + encodeURIComponent(val);
-        return queryBuilder;
+        return qb;
       },
       order(col, opts) {
         const asc = !opts || opts.ascending !== false;
         url += '&order=' + col + '.' + (asc ? 'asc' : 'desc');
-        return queryBuilder;
+        return qb;
       },
       single() {
         isSingle = true;
-        return queryBuilder;
+        return qb;
       },
       insert(rows) {
         method = 'POST';
         bodyData = JSON.stringify(rows);
-        return queryBuilder;
+        return qb;
       },
       update(vals) {
         method = 'PATCH';
         bodyData = JSON.stringify(vals);
-        return queryBuilder;
+        return qb;
       },
       delete() {
         method = 'DELETE';
-        return queryBuilder;
+        return qb;
       },
       async then(resolve) {
         const session = getSavedSession();
@@ -103,11 +102,11 @@ window.supabaseClient = {
         if (!res.ok) {
           resolve({ data: null, error: { message: (json && json.message) ? json.message : 'Database error' } });
         } else {
-          const singleRow = (Array.isArray(json) && json.length > 0) ? json[0] : null;
-          resolve({ data: isSingle ? singleRow : json, error: null });
+          const firstRow = (Array.isArray(json) && json.length > 0) ? json[0] : null;
+          resolve({ data: isSingle ? firstRow : json, error: null });
         }
       }
     };
-    return queryBuilder;
+    return qb;
   }
 };
