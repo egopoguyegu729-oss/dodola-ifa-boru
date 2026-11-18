@@ -18,19 +18,16 @@
   </div>
 
   <div class="container" style="max-width: 460px;">
-
-    <!-- Message Alert Box -->
     <div id="alertBox" class="alert-box hidden"></div>
 
-    <!-- SCREEN 1: LOGIN & SIGN-UP CARD -->
+    <!-- Login & Sign-Up Card -->
     <div id="authCard" class="card">
-      <!-- Switch Tabs -->
       <div style="display: flex; gap: 8px; margin-bottom: 20px;">
         <button id="tabLogin" class="btn btn-primary" onclick="showTab('login')">Sign In</button>
         <button id="tabSignup" class="btn" style="background: #E2E8F0; color: #1E293B;" onclick="showTab('signup')">Create Account</button>
       </div>
 
-      <!-- LOGIN FORM -->
+      <!-- Login Form -->
       <form id="loginForm">
         <div class="form-group">
           <label>Gmail Address</label>
@@ -43,24 +40,21 @@
         <button type="submit" class="btn btn-primary" id="loginBtn">Sign In to Portal</button>
       </form>
 
-      <!-- SIGN-UP FORM -->
+      <!-- Sign-Up Form -->
       <form id="signupForm" class="hidden">
         <div class="form-group">
           <label>Full Name (First, Father's & Grandfather's Name)</label>
           <input type="text" id="regName" placeholder="e.g., Abebe Bikila Tadesse" required>
         </div>
-
         <div class="form-group">
           <label>Gmail Address</label>
           <input type="email" id="regEmail" placeholder="yourname@gmail.com" required>
         </div>
-
         <div class="form-group">
           <label>Phone Number (Ethiopian Format)</label>
           <input type="tel" id="regPhone" value="+251 " placeholder="+251 912345678" required>
           <small style="color: #64748B; font-size: 0.75rem;">Format: +251 9xxxxxxxx or +251 7xxxxxxxx</small>
         </div>
-
         <div class="form-group">
           <label>I am a...</label>
           <select id="regRole" onchange="toggleClassField()" required>
@@ -68,8 +62,6 @@
             <option value="teacher">Teacher</option>
           </select>
         </div>
-
-        <!-- Grade & Section Selector (Shown only for Students) -->
         <div id="classFieldGroup">
           <div class="form-group">
             <label>Select Grade / Stream</label>
@@ -83,7 +75,6 @@
               <option value="Grade 12 Social">Grade 12 Social</option>
             </select>
           </div>
-
           <div class="form-group">
             <label>Select Section</label>
             <select id="regSection">
@@ -97,17 +88,15 @@
             </select>
           </div>
         </div>
-
         <div class="form-group">
           <label>Create Password (At least 6 characters)</label>
           <input type="password" id="regPassword" minlength="6" placeholder="Create a strong password" required>
         </div>
-
         <button type="submit" class="btn btn-gold" id="signupBtn">Submit Registration</button>
       </form>
     </div>
 
-    <!-- SCREEN 2: WAITING FOR ADMIN APPROVAL -->
+    <!-- Waiting for Approval Card -->
     <div id="pendingCard" class="card card-urgent text-center hidden">
       <div style="font-size: 2.5rem; margin-bottom: 10px;">⏳</div>
       <h2 style="margin-bottom: 8px;">Account Pending Approval</h2>
@@ -122,14 +111,141 @@
       </div>
       <button onclick="logoutUser()" class="btn btn-primary">Sign Out</button>
     </div>
-
   </div>
 
-  <!-- Load Local Supabase File First (Instant Offline Load!) -->
-          <script src="js/config.js?v=2"></script>
-  <script src="js/auth.js?v=2"></script>
-</body>
-</html>
+  <script>
+    // PASTE YOUR REAL SUPABASE PROJECT URL BELOW (keep the single quotes, no slash at the end)
+    const SUPABASE_URL = 'https://qjxvoeioiljvwqnxmkzs.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_ozhGlJoKumxxP1lWCQpvug_lrLKG6Lr';
 
+    function showMessage(text, isError = true) {
+      const box = document.getElementById('alertBox');
+      box.textContent = text;
+      box.className = isError ? 'alert-box alert-error' : 'alert-box alert-success';
+      box.classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
 
+    function showTab(tab) {
+      document.getElementById('alertBox').classList.add('hidden');
+      document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+      document.getElementById('signupForm').classList.toggle('hidden', tab === 'login');
+      document.getElementById('tabLogin').className = tab === 'login' ? 'btn btn-primary' : 'btn';
+      document.getElementById('tabSignup').className = tab !== 'login' ? 'btn btn-primary' : 'btn';
+    }
 
+    function toggleClassField() {
+      const role = document.getElementById('regRole').value;
+      document.getElementById('classFieldGroup').classList.toggle('hidden', role !== 'student');
+    }
+
+    async function loadProfileAndRoute(session) {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/profiles?id=eq.' + session.user.id + '&select=*', {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + session.access_token
+        }
+      });
+      const rows = await res.json();
+      const profile = Array.isArray(rows) ? rows.at(0) : null;
+
+      if (!profile) {
+        throw new Error('Profile not found in database. Please check Supabase profiles table.');
+      }
+
+      if (profile.is_approved === true) {
+        window.location.href = 'dashboard.html';
+      } else {
+        document.getElementById('authCard').classList.add('hidden');
+        document.getElementById('pendingCard').classList.remove('hidden');
+        document.getElementById('pendingUserName').textContent = profile.full_name;
+        document.getElementById('pendingUserEmail').textContent = profile.email;
+        document.getElementById('pendingUserPhone').textContent = profile.phone;
+        document.getElementById('pendingUserRole').textContent =
+          profile.role === 'student' ? 'Student (' + profile.class_name + ')' : 'Teacher';
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      btn.textContent = 'Signing In...';
+      btn.disabled = true;
+
+      try {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error_description || json.msg || 'Invalid Gmail or password');
+
+        localStorage.setItem('sb_session', JSON.stringify({ access_token: json.access_token, user: json.user }));
+        await loadProfileAndRoute(json);
+      } catch (err) {
+        showMessage(err.message);
+        btn.textContent = 'Sign In to Portal';
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('signupBtn');
+      btn.textContent = 'Creating Account...';
+      btn.disabled = true;
+
+      try {
+        const fullName = document.getElementById('regName').value.trim();
+        const email = document.getElementById('regEmail').value.trim();
+        const cleanedPhone = document.getElementById('regPhone').value.replace(/\s+/g, '');
+        const role = document.getElementById('regRole').value;
+        const grade = document.getElementById('regGrade').value;
+        const section = document.getElementById('regSection').value;
+        const password = document.getElementById('regPassword').value;
+
+        if (!/^\+251\d{9}$/.test(cleanedPhone)) {
+          throw new Error('Enter a valid Ethiopian phone number: +251 followed by 9 digits.');
+        }
+        if (role === 'student' && (!grade || !section)) {
+throw new Error('Please select both your Grade and your Section.');
+}
+const res = await fetch(SUPABASE_URL + '/auth/v1/signup', {
+method: 'POST',
+headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+body: JSON.stringify({
+email,
+password,
+data: {
+full_name: fullName,
+phone: cleanedPhone,
+role: role,
+class_name: role === 'student' ? (grade + ' - ' + section) : null
+}
+})
+});
+const json = await res.json();
+if (!res.ok) throw new Error(json.msg || json.error_description || 'Sign up failed');
+const sessionObj = { access_token: json.access_token, user: json.user || json };
+localStorage.setItem('sb_session', JSON.stringify(sessionObj));
+await loadProfileAndRoute(sessionObj);
+} catch (err) {
+showMessage(err.message);
+btn.textContent = 'Submit Registration';
+btn.disabled = false;
+}
+});
+function logoutUser() {
+localStorage.removeItem('sb_session');
+window.location.reload();
+}
+(async function init() {
+const saved = JSON.parse(localStorage.getItem('sb_session') || 'null');
+if (saved && saved.access_token && saved.user) {
+try { await loadProfileAndRoute(saved); } catch (e) { localStorage.removeItem('sb_session'); }
+}
+})();
