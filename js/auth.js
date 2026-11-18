@@ -177,4 +177,7 @@ async function logoutUser() {
   window.location.reload();
 }
 
-checkCurrentUser();
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(checkCurrentUser, 300);
+});
+
