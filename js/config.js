@@ -1,4 +1,4 @@
-// js/config.js
+// js/config.js - Clean Direct Supabase Connector
 const SUPABASE_URL = 'https://qjxvoeioiljvwqnxmkzs.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ozhGlJoKumxxP1lWCQpvug_lrLKG6Lr';
 
@@ -23,30 +23,6 @@ window.supabaseClient = {
   auth: {
     async getSession() {
       return { data: { session: getSavedSession() }, error: null };
-    },
-    async signUp({ email, password, options }) {
-      const res = await fetch(SUPABASE_URL + '/auth/v1/signup', {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify({ email: email, password: password, data: (options && options.data) || {} })
-      });
-      const json = await res.json();
-      if (!res.ok) return { data: null, error: { message: json.msg || json.error_description || 'Sign up failed' } };
-      const sessionObj = { access_token: json.access_token, user: json.user || json };
-      if (json.access_token) localStorage.setItem('sb_session', JSON.stringify(sessionObj));
-      return { data: sessionObj, error: null };
-    },
-    async signInWithPassword({ email, password }) {
-      const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify({ email: email, password: password })
-      });
-      const json = await res.json();
-      if (!res.ok) return { data: null, error: { message: json.error_description || json.msg || 'Invalid login' } };
-      const sessionObj = { access_token: json.access_token, user: json.user };
-      localStorage.setItem('sb_session', JSON.stringify(sessionObj));
-      return { data: sessionObj, error: null };
     },
     async signOut() {
       localStorage.removeItem('sb_session');
@@ -102,7 +78,7 @@ window.supabaseClient = {
         if (!res.ok) {
           resolve({ data: null, error: { message: (json && json.message) ? json.message : 'Database error' } });
         } else {
-          const firstRow = (Array.isArray(json) && json.length > 0) ? json[0] : null;
+          const firstRow = Array.isArray(json) ? json.at(0) : null;
           resolve({ data: isSingle ? firstRow : json, error: null });
         }
       }
