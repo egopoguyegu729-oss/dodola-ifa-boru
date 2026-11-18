@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Dodola Ifa Boru</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-brand">
+      <img src="assets/logo.png" alt="Logo">
+      <div>
+        <h1>Admin Control Panel</h1>
+        <span>Dodola Ifa Boru Boarding School</span>
+      </div>
+    </div>
+    <a href="dashboard.html" class="btn btn-sm" style="background: rgba(255,255,255,0.18); color: #fff; text-decoration:none;">← Home</a>
+  </div>
+
+  <div class="container">
+    <div id="adminAlert" class="alert-box hidden"></div>
+
+    <!-- 1. PENDING APPROVALS -->
+    <div class="card card-urgent">
+      <h3 style="margin-bottom: 10px;">⏳ Pending User Approvals</h3>
+      <div id="pendingList">
+        <p style="color: #64748B; font-size: 0.9rem;">Checking for new registrations...</p>
+      </div>
+    </div>
+
+    <!-- 2. PUBLISH ANNOUNCEMENT -->
+    <div class="card">
+      <h3 style="margin-bottom: 12px;">📢 Post New Announcement</h3>
+      <form id="announcementForm">
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="annTitle" placeholder="e.g., Mid-Term Exam Schedule" required>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="annCategory">
+            <option value="Academic">Academic</option>
+            <option value="Boarding">Boarding / Dormitory</option>
+            <option value="General">General</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Message Details</label>
+          <textarea id="annContent" rows="4" placeholder="Write the full announcement here..." required></textarea>
+        </div>
+        <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" id="annUrgent" style="width:auto;">
+          <label for="annUrgent" style="margin:0;">Mark as Urgent Alert (Gold Highlight)</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Publish Announcement</button>
+      </form>
+    </div>
+
+    <!-- 3. ADD UPCOMING EVENT -->
+    <div class="card">
+      <h3 style="margin-bottom: 12px;">📅 Add School Event</h3>
+      <form id="eventForm">
+        <div class="form-group">
+          <label>Event Name</label>
+          <input type="text" id="evTitle" placeholder="e.g., Inter-Class Science Fair" required>
+        </div>
+        <div class="form-group">
+          <label>Event Date</label>
+          <input type="date" id="evDate" required>
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" id="evLocation" placeholder="e.g., Main Assembly Hall">
+        </div>
+        <div class="form-group">
+          <label>Short Description</label>
+          <input type="text" id="evDesc" placeholder="Brief details about the event">
+        </div>
+        <button type="submit" class="btn btn-gold">Add Event to Calendar</button>
+      </form>
+    </div>
+
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    function showAdminMsg(msg, isError = false) {
+      const box = document.getElementById('adminAlert');
+      box.textContent = msg;
+      box.className = isError ? 'alert-box alert-error' : 'alert-box alert-success';
+      box.classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    async function loadPendingUsers() {
+      const { data: users } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('is_approved', false)
+        .order('created_at', { ascending: true });
+
+      const container = document.getElementById('pendingList');
+      if (!users || users.length === 0) {
+        container.innerHTML = '<p style="color:#64748B; font-size:0.88rem;">No pending users right now. Everyone is verified!</p>';
+        return;
+      }
+
+      container.innerHTML = users.map(u => `
+        <div style="background:#fff; border:1px solid #E2E8F0; border-radius:10px; padding:12px; margin-bottom:10px;">
+          <strong>${u.full_name}</strong>
+          <span class="badge badge-blue" style="margin-left:6px;">${u.role === 'student' ? u.class_name : 'TEACHER'}</span>
+          <p style="font-size:0.82rem; color:#64748B; margin:4px 0;">📧 ${u.email} • 📞 ${u.phone}</p>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button onclick="approveUser('${u.id}')" class="btn btn-success btn-sm">✓ Approve</button>
+            <button onclick="rejectUser('${u.id}')" class="btn btn-danger btn-sm">✕ Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function approveUser(userId) {
+      const { error } = await supabaseClient
+        .from('profiles')
+        .update({ is_approved: true })
+        .eq('id', userId);
+
+      if (error) {
+        showAdminMsg('Error approving user: ' + error.message, true);
+      } else {
+        showAdminMsg('User approved! They can now enter the school portal.');
+        loadPendingUsers();
+      }
+    }
+
+    async function rejectUser(userId) {
+      if (!confirm('Are you sure you want to delete this registration?')) return;
+      const { error } = await supabaseClient
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (error) {
+        showAdminMsg('Error deleting user: ' + error.message, true);
+      } else {
+        showAdminMsg('Registration removed.');
+        loadPendingUsers();
+      }
+    }
+
+    document.getElementById('announcementForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { error } = await supabaseClient.from('announcements').insert([{
+        title: document.getElementById('annTitle').value.trim(),
+        category: document.getElementById('annCategory').value,
+        content: document.getElementById('annContent').value.trim(),
+        is_urgent: document.getElementById('annUrgent').checked,
+        author_name: currentUserProfile.full_name
+      }]);
+
+      if (error) {
+        showAdminMsg('Failed to post: ' + error.message, true);
+      } else {
+        showAdminMsg('Announcement published to all students and teachers!');
+        e.target.reset();
+      }
+    });
+
+    document.getElementById('eventForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { error } = await supabaseClient.from('events').insert([{
+        title: document.getElementById('evTitle').value.trim(),
+        event_date: document.getElementById('evDate').value,
+        location: document.getElementById('evLocation').value.trim(),
+        description: document.getElementById('evDesc').value.trim()
+      }]);
+
+      if (error) {
+        showAdminMsg('Failed to add event: ' + error.message, true);
+      } else {
+        showAdminMsg('School event added to dashboard!');
+        e.target.reset();
+      }
+    });
+
+    async function initAdmin() {
+      const admin = await requireApprovedUser(true);
+      if (admin) loadPendingUsers();
+    }
+
+    initAdmin();
+  </script>
+</body>
+</html>
