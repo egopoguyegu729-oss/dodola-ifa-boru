@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Hub - Dodola Ifa Boru</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Top Header -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <img src="assets/logo.png" alt="Logo">
+      <div>
+        <h1>Dodola Ifa Boru</h1>
+        <span id="userBadge">Loading profile...</span>
+      </div>
+    </div>
+    <div style="display: flex; gap: 6px;">
+      <a href="admin.html" id="adminNavBtn" class="btn btn-gold btn-sm hidden" style="text-decoration:none;">Admin</a>
+      <button onclick="logoutUser()" class="btn btn-sm" style="background: rgba(255,255,255,0.18); color: #fff;">Exit</button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Upcoming Events Section -->
+    <div class="card">
+      <h3 style="margin-bottom: 12px;">📅 Upcoming School Events</h3>
+      <div id="eventsList">
+        <p style="color: #64748B; font-size: 0.9rem;">Loading events...</p>
+      </div>
+    </div>
+
+    <!-- Central Announcements Feed -->
+    <h3 style="margin: 18px 0 10px;">📢 Official School Announcements</h3>
+    <div id="announcementsList">
+      <p style="color: #64748B; font-size: 0.9rem;">Loading announcements...</p>
+    </div>
+
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item active"><span class="nav-icon">🏠</span>Home</a>
+    <a href="class.html" class="nav-item"><span class="nav-icon">🎓</span>Class</a>
+    <a href="library.html" class="nav-item"><span class="nav-icon">📚</span>Library</a>
+    <a href="clubs.html" class="nav-item"><span class="nav-icon">🏆</span>Clubs</a>
+    <a href="messages.html" class="nav-item"><span class="nav-icon">💬</span>Teachers</a>
+  </nav>
+
+  <script src="js/config.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    async function loadDashboard() {
+      const profile = await requireApprovedUser();
+      if (!profile) return;
+
+      // 1. Load Upcoming Events
+      const { data: events } = await supabaseClient
+        .from('events')
+        .select('*')
+        .order('event_date', { ascending: true });
+
+      const eventsBox = document.getElementById('eventsList');
+      if (!events || events.length === 0) {
+        eventsBox.innerHTML = '<p style="color:#64748B; font-size:0.88rem;">No upcoming events scheduled yet.</p>';
+      } else {
+        eventsBox.innerHTML = events.map(ev => `
+          <div style="padding: 10px 0; border-bottom: 1px solid #E2E8F0;">
+            <span class="badge badge-gold">${ev.event_date}</span>
+            <strong style="display:block; margin-top:4px; color:#1E293B;">${ev.title}</strong>
+            <small style="color:#64748B;">${ev.location ? '📍 ' + ev.location + ' — ' : ''}${ev.description || ''}</small>
+          </div>
+        `).join('');
+      }
+
+      // 2. Load Announcements
+      const { data: posts } = await supabaseClient
+        .from('announcements')
+        .select('*')
+        .order('is_urgent', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      const annBox = document.getElementById('announcementsList');
+      if (!posts || posts.length === 0) {
+        annBox.innerHTML = '<div class="card"><p style="color:#64748B; font-size:0.88rem;">No announcements posted yet.</p></div>';
+      } else {
+        annBox.innerHTML = posts.map(post => `
+          <div class="card ${post.is_urgent ? 'card-urgent' : ''}">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span class="badge ${post.is_urgent ? 'badge-gold' : 'badge-blue'}">
+                ${post.is_urgent ? '⚠️ URGENT • ' : ''}${post.category}
+              </span>
+              <small style="color:#64748B;">${new Date(post.created_at).toLocaleDateString()}</small>
+            </div>
+            <h4 style="margin-bottom:6px; font-size:1.05rem;">${post.title}</h4>
+            <p style="font-size:0.92rem; color:#334155; white-space:pre-line;">${post.content}</p>
+            <small style="display:block; margin-top:10px; color:#64748B;">Posted by ${post.author_name}</small>
+          </div>
+        `).join('');
+      }
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>
