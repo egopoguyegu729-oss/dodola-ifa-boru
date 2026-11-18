@@ -1,10 +1,9 @@
 // js/ui.js - Protects pages and loads user profile & navigation
-
 let currentUserProfile = null;
 
 async function requireApprovedUser(adminOnly = false) {
   const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) {
+  if (!session || !session.user) {
     window.location.href = 'index.html';
     return null;
   }
@@ -27,17 +26,15 @@ async function requireApprovedUser(adminOnly = false) {
 
   currentUserProfile = profile;
 
-  // Show Admin button in top bar if user is an admin
   const adminBtn = document.getElementById('adminNavBtn');
   if (adminBtn && profile.role === 'admin') {
     adminBtn.classList.remove('hidden');
   }
 
-  // Display user name & role if badge exists
   const userBadge = document.getElementById('userBadge');
   if (userBadge) {
     const label = profile.role === 'student' ? profile.class_name : profile.role.toUpperCase();
-    userBadge.textContent = `${profile.full_name} (${label})`;
+    userBadge.textContent = profile.full_name + ' (' + label + ')';
   }
 
   return profile;
